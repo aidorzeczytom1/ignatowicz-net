@@ -1,1 +1,398 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infrastruktura KDP</title>
+    <style>
+        /* * STYL TERMINALOWY LINUX 
+         * Ciemne tło, zielona, stałoszerokościowa czcionka, brak pogrubień.
+         */
+        :root {
+            --bg-color: #0c0c0c;       /* Prawie czarne tło */
+            --text-color: #2ecc71;     /* Przyjemny, terminalowy zielony */
+            --border-color: #2ecc71;   /* Zielone ramki */
+            --card-bg: #111111;        /* Lekko jaśniejsze tło dla kart */
+            --danger-color: #e74c3c;   /* Czerwony dla akcji usuwania */
+            --danger-hover: #c0392b;   
+            --hover-bg: #1a251d;       /* Kolor podświetlenia po najechaniu */
+        }
 
+        body { 
+            /* Ustawienie czcionki o stałej szerokości znaków (monospace), bez pogrubień */
+            font-family: 'Courier New', Courier, monospace; 
+            font-size: medium;
+            font-weight: normal;
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 40px 20px; 
+            margin: 0;
+        }
+
+        .container { 
+            max-width: 800px; /* Zwiększona szerokość, aby lepiej wypełniać ekran */
+            width: 100%; 
+        }
+
+        /* Kontener dla nagłówka, układający zdjęcie i tekst w jednym rzędzie */
+        .header-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px; /* Odstęp między zdjęciem a tekstem */
+            margin-bottom: 30px;
+        }
+
+        .author-photo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%; /* Okrągłe zdjęcie */
+            border: 2px solid var(--border-color); /* Terminalowa ramka wokół zdjęcia */
+            object-fit: cover;
+        }
+
+        h1 { 
+            font-size: 2em;
+            margin: 0;
+            font-weight: normal; /* Brak pogrubienia zgodnie z wytycznymi */
+        }
+        
+        /* * FORMULARZ DODAWANIA 
+         */
+        .add-form {
+            background: var(--bg-color);
+            padding: 20px;
+            border: 1px solid var(--border-color); /* Terminalowa ramka */
+            margin-bottom: 30px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* Pola tekstowe w stylu terminala */
+        .add-form input {
+            flex: 1;
+            min-width: 150px;
+            padding: 10px;
+            background-color: #000;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            font-family: inherit;
+            font-size: inherit;
+        }
+
+        .add-form input:focus {
+            outline: none;
+            box-shadow: 0 0 5px var(--border-color);
+        }
+
+        /* Błąd walidacji - czerwona ramka */
+        .add-form input.error {
+            border-color: var(--danger-color);
+            box-shadow: 0 0 5px var(--danger-color);
+        }
+
+        /* Przyciski w stylu terminala - puste w środku, z obramowaniem */
+        .btn {
+            background-color: transparent;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: inherit;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background-color: var(--border-color);
+            color: var(--bg-color); /* Odwrócenie kolorów po najechaniu */
+        }
+
+        #links-container { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px; 
+            width: 100%;
+        }
+
+        /* * KARTY Z LINKAMI
+         */
+        .link-card { 
+            background: var(--card-bg); 
+            padding: 15px 20px; 
+            border: 1px solid #333;
+            border-left: 5px solid var(--border-color); 
+            text-decoration: none; 
+            color: var(--text-color); 
+            display: flex; 
+            align-items: center; /* Wyrównanie w pionie */
+            justify-content: space-between; /* Rozsunięcie elementów na boki */
+            width: 100%; /* Pełna szerokość kontenera */
+            box-sizing: border-box; /* Padding nie powiększa elementu */
+            transition: background 0.2s;
+        }
+
+        .link-card:hover { 
+            background: var(--hover-bg);
+            border-color: var(--border-color);
+        }
+
+        /* Kontener na sam tekst i link - pozwala na zawijanie wierszy */
+        .link-content {
+            flex: 1; /* Zajmuje całą dostępną przestrzeń */
+            min-width: 0; /* Ważne w flexboxie, pozwala tekstowi się kurczyć i zawijać */
+            margin-right: 20px; /* Odstęp od przycisku usuwania */
+            word-wrap: break-word; /* Wymusza łamanie zbyt długich słów/linków */
+            overflow-wrap: break-word;
+        }
+
+        .link-desc {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .link-url {
+            display: block;
+            font-size: 0.85em;
+            opacity: 0.7;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* Wyraźnie czerwony przycisk usuwania w stylu terminala */
+        .delete-btn {
+            background: transparent;
+            color: var(--danger-color);
+            border: 1px solid var(--danger-color);
+            padding: 8px 15px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.9em;
+            white-space: nowrap; /* Zapobiega łamaniu napisu na przycisku */
+            transition: all 0.2s;
+        }
+
+        .delete-btn:hover { 
+            background: var(--danger-color); 
+            color: #fff; /* Biały tekst po najechaniu na czerwony przycisk */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header-container">
+            <img src="Autor.png" alt="Autor" class="author-photo">
+            <h1>Moja Infrastruktura KDP</h1>
+        </div>
+        
+        <div class="add-form">
+            <input type="text" id="new-url" placeholder="kdp.amazon.com (URL)" autocomplete="off">
+            <input type="text" id="new-desc" placeholder="Opis np. Panel KDP" autocomplete="off">
+            <button class="btn" onclick="addLink()">Dodaj</button>
+            <button class="btn" onclick="exportHTML()" title="Wybierz folder i zapisz jako HTML">Eksportuj</button>
+        </div>
+
+        <div id="links-container"></div>
+    </div>
+
+    <script>
+        // Domyślne dane, jeśli nic nie ma w localStorage
+        const defaultLinks = [
+            { url: "https://kdp.amazon.com", desc: "Panel Amazon KDP" },
+            { url: "https://mailadmin.zoho.eu", desc: "Poczta Zoho - Administracja" },
+            { url: "https://dash.cloudflare.com", desc: "Cloudflare" },
+            { url: "https://github.com", desc: "GitHub" }
+        ];
+
+        // Pobieranie danych z przeglądarki (localStorage)
+        let myLinks = JSON.parse(localStorage.getItem('kdpLinks')) || defaultLinks;
+        const container = document.getElementById('links-container');
+
+        // --- FUNKCJA RYSOWANIA LINKÓW NA EKRANIE ---
+        function renderLinks() {
+            container.innerHTML = '';
+            myLinks.forEach((link, index) => {
+                // Tworzenie karty linku (zewnętrzny div)
+                const cardDiv = document.createElement('div');
+                cardDiv.className = 'link-card';
+                
+                // Kontener na teksty (opis i adres), który pozwala na zawijanie
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'link-content';
+
+                // Wyświetlanie opisu jako klikalnego linku
+                const aDesc = document.createElement('a');
+                aDesc.href = link.url;
+                aDesc.target = '_blank';
+                aDesc.className = 'link-desc';
+                aDesc.textContent = link.desc;
+
+                // Wyświetlanie adresu URL małą czcionką pod spodem
+                const spanUrl = document.createElement('span');
+                spanUrl.className = 'link-url';
+                spanUrl.textContent = link.url;
+
+                contentDiv.appendChild(aDesc);
+                contentDiv.appendChild(spanUrl);
+
+                // Przycisk usuwania
+                const delBtn = document.createElement('button');
+                delBtn.textContent = 'Usuń';
+                delBtn.className = 'delete-btn';
+                delBtn.onclick = () => deleteLink(index);
+
+                cardDiv.appendChild(contentDiv);
+                cardDiv.appendChild(delBtn);
+                
+                container.appendChild(cardDiv);
+            });
+        }
+
+        // --- FUNKCJA DODAWANIA LINKU Z WALIDACJĄ ---
+        function addLink() {
+            const urlInput = document.getElementById('new-url');
+            const descInput = document.getElementById('new-desc');
+            
+            let url = urlInput.value.trim();
+            const desc = descInput.value.trim();
+
+            // Resetowanie wyglądu błędu
+            urlInput.classList.remove('error');
+            descInput.classList.remove('error');
+
+            // Walidacja - czy pola są wypełnione
+            if (!url || !desc) {
+                if(!url) urlInput.classList.add('error');
+                if(!desc) descInput.classList.add('error');
+                alert("Wypełnij oba pola przed dodaniem.");
+                return;
+            }
+
+            // Prosta walidacja adresu URL (wymaga przynajmniej jednej kropki w środku, bez spacji)
+            const urlRegex = /^[^\s]+\.[^\s]+$/;
+            if (!urlRegex.test(url)) {
+                urlInput.classList.add('error');
+                alert("Podano nieprawidłowy format adresu internetowego.");
+                return;
+            }
+
+            // Dodanie protokołu, jeśli użytkownik wpisał np. samo "google.com"
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                url = 'https://' + url;
+            }
+
+            // Dodanie do tablicy i zapis
+            myLinks.push({ url: url, desc: desc });
+            localStorage.setItem('kdpLinks', JSON.stringify(myLinks));
+            
+            // Czyszczenie formularza i odświeżenie widoku
+            urlInput.value = '';
+            descInput.value = '';
+            renderLinks();
+        }
+
+        // --- FUNKCJA USUWANIA LINKU ---
+        function deleteLink(index) {
+            // Pytanie o potwierdzenie, typowe dla konsolowego trybu pracy
+            if(confirm(`Czy na pewno chcesz usunąć z listy: ${myLinks[index].desc}?`)) {
+                myLinks.splice(index, 1);
+                localStorage.setItem('kdpLinks', JSON.stringify(myLinks));
+                renderLinks();
+            }
+        }
+
+        // --- FUNKCJA EKSPORTU (Z OBSŁUGĄ WYBORU FOLDERU) ---
+        async function exportHTML() {
+            if(myLinks.length === 0) {
+                alert("Brak danych do wyeksportowania!");
+                return;
+            }
+
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            
+            const fileName = `amazon-kdp-ecosystem-${year}-${month}-${day}_${hours}-${minutes}.html`;
+
+            // Przygotowanie kodu HTML z zachowaniem terminalowego stylu dla wyeksportowanego pliku
+            const linksListHTML = myLinks.map(link => 
+                `            <a href="${link.url}" class="link-card" target="_blank">
+                <span class="desc">${link.desc}</span>
+                <span class="url">${link.url}</span>
+            </a>`
+            ).join('\\n');
+
+            const fileContent = `<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zrzut Infrastruktury KDP - ${day}.${month}.${year}</title>
+    <style>
+        body { font-family: 'Courier New', Courier, monospace; background-color: #0c0c0c; color: #2ecc71; display: flex; flex-direction: column; align-items: center; padding: 40px 20px; margin: 0; }
+        .container { max-width: 800px; width: 100%; }
+        h1 { text-align: center; margin-bottom: 30px; font-weight: normal; }
+        #links-container { display: flex; flex-direction: column; gap: 15px; }
+        .link-card { background: #111; padding: 15px 20px; border: 1px solid #333; border-left: 5px solid #2ecc71; text-decoration: none; color: inherit; display: flex; flex-direction: column; transition: background 0.2s; word-wrap: break-word; }
+        .link-card:hover { background: #1a251d; border-color: #2ecc71; }
+        .desc { font-size: 1.1em; margin-bottom: 5px; }
+        .url { font-size: 0.85em; opacity: 0.7; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Baza Linków<br><small style="font-size:0.6em; opacity: 0.7;">(Stan na: ${day}.${month}.${year} ${hours}:${minutes})</small></h1>
+        <div id="links-container">
+${linksListHTML}
+        </div>
+    </div>
+</body>
+</html>`;
+
+            try {
+                // Wykorzystanie File System Access API - pozwala na wybranie folderu i zmianę nazwy
+                // Obsługiwane głównie przez przeglądarki Chrome, Edge, Opera
+                if (window.showSaveFilePicker) {
+                    const handle = await window.showSaveFilePicker({
+                        suggestedName: fileName,
+                        types: [{
+                            description: 'Plik HTML',
+                            accept: {'text/html': ['.html']},
+                        }],
+                    });
+                    const writable = await handle.createWritable();
+                    await writable.write(fileContent);
+                    await writable.close();
+                } else {
+                    // Wariant awaryjny dla Firefoksa / starszych przeglądarek (zapisuje w domyślnych Pobranych)
+                    const blob = new Blob([fileContent], { type: 'text/html;charset=utf-8' });
+                    const tempLink = document.createElement('a');
+                    tempLink.href = URL.createObjectURL(blob);
+                    tempLink.download = fileName;
+                    document.body.appendChild(tempLink);
+                    tempLink.click();
+                    document.body.removeChild(tempLink);
+                }
+            } catch (err) {
+                // Ukrywamy błąd, jeśli użytkownik po prostu kliknął "Anuluj" w oknie wyboru pliku
+                if (err.name !== 'AbortError') {
+                    console.error("Błąd zapisu:", err);
+                    alert("Wystąpił problem podczas próby zapisu pliku.");
+                }
+            }
+        }
+
+        // Inicjalizacja widoku przy starcie
+        renderLinks();
+    </script>
+
+</body>
+</html>
